@@ -1,9 +1,9 @@
 package client;
 
+import actions.ParseInputAction;
 import lombok.RequiredArgsConstructor;
 import model.Command;
 import model.InitializationInput;
-import actions.ParseInputAction;
 
 import java.util.List;
 import java.util.Scanner;

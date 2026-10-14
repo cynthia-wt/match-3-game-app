@@ -1,19 +1,24 @@
 package app;
 
 import client.GameConsole;
+import engine.GameEngine;
 import model.Command;
 import model.InitializationInput;
-import engine.GameEngine;
 
 import java.util.List;
 
 public class Match3App {
 
     public static void main(String[] args) {
+        // Get initialization input
         GameConsole gameConsole = new GameConsole();
         InitializationInput initializationInput = gameConsole.initialiseGame();
+
+        // Initialize game engine
         GameEngine gameEngine = new GameEngine(initializationInput);
         boolean continueGame = true;
+
+        // Release the first brick
         gameEngine.nextBrick();
 
         while (continueGame) {

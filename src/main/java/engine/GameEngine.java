@@ -14,31 +14,28 @@ import static actions.BrickAction.moveToBottom;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GameEngine {
-
     final List<Brick> bricks;
     char[][] currentFrame;
-    int currentFrameNumber;
-    int currentBrickIndex;
-    final int boardWidth;
-    final int boardHeight;
-    int currentVerticalPosition;
-    int currentHorizontalPosition;
+
+    // setting this as 0 since we do not have any frames now
+    int currentFrameNumber = 0;
+
+    // setting these as -1 at the start when there is no bricks
+    int currentBrickIndex = -1;
+    int currentVerticalPosition = -1;
+    int currentHorizontalPosition = -1;
+
+    public static char BLANK_CELL = '.';
 
     public GameEngine(InitializationInput initializationInput) {
         int width = initializationInput.getBoardWidth();
         int height = initializationInput.getBoardHeight();
-
         char[][] board = new char[height][width];
         for (char[] row : board) {
             Arrays.fill(row, '.');
         }
-
-        this.bricks = initializationInput.getBricks();
-        this.currentBrickIndex = -1;
         this.currentFrame = board;
-        this.currentFrameNumber = 1;
-        this.boardWidth = initializationInput.getBoardWidth();
-        this.boardHeight = initializationInput.getBoardHeight();
+        this.bricks = initializationInput.getBricks();
     }
 
     public void nextTurn(List<Command> commands) {
@@ -57,6 +54,7 @@ public class GameEngine {
         Brick nextBrick = bricks.get(currentBrickIndex);
         Alignment alignment = nextBrick.getAlignment();
         char[] symbols = nextBrick.getSymbols();
+        int boardWidth = currentFrame[0].length;
 
         if (alignment.equals(Alignment.HORIZONTAL)) {
             int start = (boardWidth - 3) / 2;
@@ -78,10 +76,14 @@ public class GameEngine {
 
         for (Command command : commands) {
             switch (command) {
-                case LEFT -> updateGameState(moveHorizontally(-1, currentBrick, currentFrame, currentHorizontalPosition, currentVerticalPosition));
-                case RIGHT -> updateGameState(moveHorizontally(1, currentBrick, currentFrame, currentHorizontalPosition, currentVerticalPosition));
-                case DOWN -> updateGameState(moveToBottom(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition));
-            };
+                case LEFT ->
+                        updateGameState(moveHorizontally(currentFrame, -1, currentBrick, currentHorizontalPosition, currentVerticalPosition));
+                case RIGHT ->
+                        updateGameState(moveHorizontally(currentFrame, 1, currentBrick, currentHorizontalPosition, currentVerticalPosition));
+                case DOWN ->
+                        updateGameState(moveToBottom(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition));
+            }
+            ;
         }
     }
 
