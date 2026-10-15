@@ -36,12 +36,12 @@ public class GameEngine {
                         .brick(null)
                         .horizontalPosition(-1)
                         .verticalPosition(-1)
-                        .landed(false)
+                        .landed(true)
                         .build())
                 .build();
     }
 
-    public boolean nextTurn(List<Command> commands) {
+    public void nextTurn(List<Command> commands) {
         executeCommands(commands);
         dropByOneRow();
 
@@ -49,35 +49,25 @@ public class GameEngine {
             checkForMatches(currentFrame, currentGameState.getActiveBrick());
         }
 
-        // check if all the bricks are used up or cannot add new brick anymore - tomorrow/friday morning
-        // testing and enhancement - sunday
-        // check once more, before submitting by 5pm - monday
-
         incrementFrameNumber();
-        return true;
     }
 
     public void nextBrick() {
         int currentBrickIndex = currentGameState.getBrickIndex() + 1;
         int currentVerticalPosition = 0;
-        int currentHorizontalPosition;
+        int currentHorizontalPosition = getBrickFirstHorizontalPosition(bricks.get(currentBrickIndex));
 
         Brick nextBrick = bricks.get(currentBrickIndex);
         Alignment alignment = nextBrick.getAlignment();
         char[] symbols = nextBrick.getSymbols();
-        int boardWidth = currentFrame[0].length;
 
         if (alignment.equals(Alignment.HORIZONTAL)) {
-            int start = (boardWidth - 3) / 2;
-            currentHorizontalPosition = start;
             for (int i = 0; i < symbols.length; i++) {
-                currentFrame[0][start + i] = symbols[i];
+                currentFrame[0][currentHorizontalPosition + i] = symbols[i];
             }
         } else {
-            int col = (boardWidth - 1) / 2;
-            currentHorizontalPosition = col;
             for (int i = 0; i < symbols.length; i++) {
-                currentFrame[i][col] = symbols[i];
+                currentFrame[i][currentHorizontalPosition] = symbols[i];
             }
         }
 
@@ -92,6 +82,28 @@ public class GameEngine {
                 .brickIndex(currentBrickIndex)
                 .activeBrick(activeBrick)
                 .build();
+    }
+
+    public boolean hasGameEnded() {
+        if (currentGameState.getBrickIndex() + 1 >= bricks.size()) {
+            return true;
+        }
+
+        Brick nextBrick = bricks.get(currentGameState.getBrickIndex() + 1);
+        int nextBrickHorizontalPosition = getBrickFirstHorizontalPosition(nextBrick);
+        if (nextBrick.getAlignment().equals(Alignment.HORIZONTAL)) {
+            for (int i = 0; i < nextBrick.getSymbols().length; i++) {
+                if (currentFrame[0][nextBrickHorizontalPosition + i] != BLANK_CELL) {
+                    return true;
+                }
+            }
+        } else {
+            if (currentFrame[0][nextBrickHorizontalPosition] != BLANK_CELL) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void executeCommands(List<Command> commands) {
@@ -130,4 +142,13 @@ public class GameEngine {
                 .build();
     }
 
+    private int getBrickFirstHorizontalPosition(Brick brick) {
+        Alignment alignment = brick.getAlignment();
+        int boardWidth = currentFrame[0].length;
+        if (alignment.equals(Alignment.HORIZONTAL)) {
+            return (boardWidth - 3) / 2;
+        } else {
+            return (boardWidth - 1) / 2;
+        }
+    }
 }

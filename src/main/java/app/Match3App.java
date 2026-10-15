@@ -10,24 +10,34 @@ import java.util.List;
 public class Match3App {
 
     public static void main(String[] args) {
-        // Get initialization input
+        boolean playAgain = true;
+        GameConsole gameConsole = new GameConsole();
+
+        while (playAgain) {
+            startGameLoop();
+            playAgain = gameConsole.startOver().equalsIgnoreCase("S");
+        }
+
+        gameConsole.quit();
+    }
+
+    private static void startGameLoop() {
         GameConsole gameConsole = new GameConsole();
         InitializationInput initializationInput = gameConsole.initialiseGame();
-
-        // Initialize game engine
         GameEngine gameEngine = new GameEngine(initializationInput);
-        boolean continueGame = true;
 
-        // Release the first brick
-        gameEngine.nextBrick();
-
-        while (continueGame) {
-            List<Command> commands = gameConsole.nextTurn(gameEngine.getCurrentFrame(), gameEngine.getCurrentGameState().getFrameNumber());
-            gameEngine.nextTurn(commands);
-
+        while (true) {
             if (gameEngine.getCurrentGameState().getActiveBrick().isLanded()) {
+                if (gameEngine.hasGameEnded()) {
+                    gameConsole.gameOver(gameEngine.getCurrentFrame(), gameEngine.getCurrentGameState().getFrameNumber());
+                    break;
+                }
+
                 gameEngine.nextBrick();
             }
+
+            List<Command> commands = gameConsole.nextTurn(gameEngine.getCurrentFrame(), gameEngine.getCurrentGameState().getFrameNumber());
+            gameEngine.nextTurn(commands);
         }
     }
 }

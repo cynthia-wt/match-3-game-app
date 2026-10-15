@@ -22,8 +22,30 @@ public class GameConsole {
         return ParseInputAction.parseInitializationInput(input);
     }
 
-    public List<Command> nextTurn(char[][] currentFrame, int turnNumber) {
-        System.out.println("Frame " + turnNumber);
+    public List<Command> nextTurn(char[][] currentFrame, int frameNumber) {
+        printFrame(currentFrame, frameNumber);
+
+        System.out.println("> Enter up to 2 commands to process before moving to the next frame (valid commands are L,R,D):");
+        String input = scanner.nextLine();
+        return ParseInputAction.parseCommandInput(input);
+    }
+
+    public void gameOver(char[][] currentFrame, int frameNumber) {
+        printFrame(currentFrame, frameNumber);
+        System.out.println("> Game Over.");
+    }
+
+    public String startOver() {
+        System.out.println("> Enter S to start over or Q to quit:");
+        return scanner.nextLine();
+    }
+
+    public void quit() {
+        System.out.println("> Thank you for playing Match-3!");
+    }
+
+    private static void printFrame(char[][] currentFrame, int frameNumber) {
+        System.out.println("Frame " + frameNumber);
 
         for (char[] row : currentFrame) {
             StringBuilder line = new StringBuilder("| ");
@@ -36,10 +58,6 @@ public class GameConsole {
             line.append(" |");
             System.out.println(line);
         }
-
-        System.out.println("> Enter up to 2 commands to process before moving to the next frame (valid commands are L,R,D):");
-        String input = scanner.nextLine();
-        return ParseInputAction.parseCommandInput(input);
     }
 
 }
