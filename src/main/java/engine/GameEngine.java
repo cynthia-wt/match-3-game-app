@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static actions.BrickAction.*;
+import static actions.MatchAction.checkForMatches;
 
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -40,20 +41,20 @@ public class GameEngine {
                 .build();
     }
 
-    public void nextTurn(List<Command> commands) {
+    public boolean nextTurn(List<Command> commands) {
         executeCommands(commands);
         dropByOneRow();
 
         if (currentGameState.getActiveBrick().isLanded()) {
-            // check for matches
+            checkForMatches(currentFrame, currentGameState.getActiveBrick());
         }
 
-        // check if all the bricks are used up or all the available spaces are filled up - tomorrow/friday morning
-        // add new brick - check if possible - saturday
+        // check if all the bricks are used up or cannot add new brick anymore - tomorrow/friday morning
         // testing and enhancement - sunday
         // check once more, before submitting by 5pm - monday
 
         incrementFrameNumber();
+        return true;
     }
 
     public void nextBrick() {

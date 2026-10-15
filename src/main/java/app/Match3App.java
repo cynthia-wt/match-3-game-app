@@ -24,6 +24,10 @@ public class Match3App {
         while (continueGame) {
             List<Command> commands = gameConsole.nextTurn(gameEngine.getCurrentFrame(), gameEngine.getCurrentGameState().getFrameNumber());
             gameEngine.nextTurn(commands);
+
+            if (gameEngine.getCurrentGameState().getActiveBrick().isLanded()) {
+                gameEngine.nextBrick();
+            }
         }
     }
 }
