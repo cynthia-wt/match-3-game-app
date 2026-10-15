@@ -1,6 +1,5 @@
-package actions;
+package engine;
 
-import engine.GameEngine;
 import model.*;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +40,7 @@ class GameEngineTest {
         assertEquals(show(expectedRows), show(engine.getCurrentFrame()));
     }
 
-    private static ActiveBrickState active(GameEngine engine) {
+    private static ActiveBrick active(GameEngine engine) {
         return engine.getCurrentGameState().getActiveBrick();
     }
 
@@ -67,9 +66,7 @@ class GameEngineTest {
                 ".....");
         assertEquals(1, engine.getCurrentGameState().getFrameNumber());
         assertEquals(-1, engine.getCurrentGameState().getBrickIndex());
-        assertEquals(-1, active(engine).getHorizontalPosition());
-        assertEquals(-1, active(engine).getVerticalPosition());
-        assertFalse(active(engine).isLanded());
+        assertNull(active(engine).getBrick());
     }
 
     // ---------- nextBrick ----------
@@ -86,6 +83,7 @@ class GameEngineTest {
                 ".....",
                 ".....");
         assertEquals(0, engine.getCurrentGameState().getBrickIndex());
+        assertSame(horizontal, active(engine).getBrick());
         assertEquals(1, active(engine).getHorizontalPosition());
         assertEquals(0, active(engine).getVerticalPosition());
         assertFalse(active(engine).isLanded());
@@ -102,6 +100,7 @@ class GameEngineTest {
                 "..@..",
                 "..^..",
                 ".....");
+        assertSame(vertical, active(engine).getBrick());
         assertEquals(2, active(engine).getHorizontalPosition());
         assertEquals(0, active(engine).getVerticalPosition());
     }
@@ -264,6 +263,7 @@ class GameEngineTest {
 
         engine.nextBrick();
         assertFalse(active(engine).isLanded()); // new brick starts fresh
+        assertSame(second, active(engine).getBrick());
         nextTurns(engine, 2); // rows 1, 2 (rests on the first brick)
 
         assertFrame(engine,

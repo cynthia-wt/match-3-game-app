@@ -1,6 +1,6 @@
 package actions;
 
-import model.ActiveBrickState;
+import model.ActiveBrick;
 import model.Alignment;
 import model.Brick;
 import org.junit.jupiter.api.Test;
@@ -14,6 +14,15 @@ class BrickActionTest {
     // Adjust this one method if your Brick is created differently (e.g. a constructor).
     private static Brick brick(Alignment alignment, String symbols) {
         return Brick.builder().alignment(alignment).symbols(symbols.toCharArray()).build();
+    }
+
+    private static ActiveBrick activeBrick(Brick brick, int x, int y) {
+        return ActiveBrick.builder()
+                .brick(brick)
+                .horizontalPosition(x)
+                .verticalPosition(y)
+                .landed(false)
+                .build();
     }
 
     // Builds a frame from readable rows, e.g. frame(".^^*.", ".....")
@@ -51,7 +60,7 @@ class BrickActionTest {
                 ".....",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveToBottom(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveToBottom(frame, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 ".....",
@@ -70,7 +79,7 @@ class BrickActionTest {
                 "..^..",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveToBottom(frame, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveToBottom(frame, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 ".....",
@@ -79,6 +88,7 @@ class BrickActionTest {
                 "..^.."), show(frame));
         assertEquals(2, state.getHorizontalPosition());
         assertEquals(1, state.getVerticalPosition()); // top row of the brick
+        assertSame(vertical, state.getBrick());
     }
 
     @Test
@@ -89,7 +99,7 @@ class BrickActionTest {
                 "...~.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveToBottom(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveToBottom(frame, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 ".....",
@@ -110,7 +120,7 @@ class BrickActionTest {
                 "..~..",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveToBottom(frame, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveToBottom(frame, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 ".....",
@@ -135,7 +145,7 @@ class BrickActionTest {
                 "..~..",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveToBottom(frame, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveToBottom(frame, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 ".....",
@@ -155,7 +165,7 @@ class BrickActionTest {
                 ".....",
                 ".^^*.");
 
-        ActiveBrickState state = BrickAction.moveToBottom(frame, horizontal, 1, 1);
+        ActiveBrick state = BrickAction.moveToBottom(frame, activeBrick(horizontal, 1, 1));
 
         assertEquals(show(
                 ".....",
@@ -170,7 +180,7 @@ class BrickActionTest {
                 ".^^*.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveToBottom(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveToBottom(frame, activeBrick(horizontal, 1, 0));
 
         assertTrue(state.isLanded());
     }
@@ -181,7 +191,7 @@ class BrickActionTest {
                 ".^^*.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveToBottom(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveToBottom(frame, activeBrick(horizontal, 1, 0));
 
         assertEquals(1, state.getHorizontalPosition());
         assertEquals(1, state.getVerticalPosition());
@@ -195,7 +205,7 @@ class BrickActionTest {
                 "..^..",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveToBottom(frame, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveToBottom(frame, activeBrick(vertical, 2, 0));
 
         assertEquals(2, state.getHorizontalPosition());
         assertEquals(1, state.getVerticalPosition()); // occupies rows 1-3
@@ -209,7 +219,7 @@ class BrickActionTest {
                 ".^^*.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, 1, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, 1, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 "..^^*",
@@ -217,6 +227,7 @@ class BrickActionTest {
         assertEquals(2, state.getHorizontalPosition());
         assertEquals(0, state.getVerticalPosition());
         assertFalse(state.isLanded());
+        assertSame(horizontal, state.getBrick());
     }
 
     @Test
@@ -225,7 +236,7 @@ class BrickActionTest {
                 ".^^*.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, -1, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, -1, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 "^^*..",
@@ -241,7 +252,7 @@ class BrickActionTest {
                 "..^..",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, 1, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, 1, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 "...*.",
@@ -259,7 +270,7 @@ class BrickActionTest {
                 "...^.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, 1, vertical, 3, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, 1, activeBrick(vertical, 3, 0));
 
         assertEquals(show(
                 "....*",
@@ -277,7 +288,7 @@ class BrickActionTest {
                 "..^^*",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, 1, horizontal, 2, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, 1, activeBrick(horizontal, 2, 0));
 
         assertEquals(show(
                 "..^^*",
@@ -293,7 +304,7 @@ class BrickActionTest {
                 "^^*..",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, -1, horizontal, 0, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, -1, activeBrick(horizontal, 0, 0));
 
         assertEquals(show(
                 "^^*..",
@@ -309,7 +320,7 @@ class BrickActionTest {
                 "....^",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, 1, vertical, 4, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, 1, activeBrick(vertical, 4, 0));
 
         assertEquals(show(
                 "....*",
@@ -327,7 +338,7 @@ class BrickActionTest {
                 "^....",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, -1, vertical, 0, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, -1, activeBrick(vertical, 0, 0));
 
         assertEquals(0, state.getHorizontalPosition());
     }
@@ -340,7 +351,7 @@ class BrickActionTest {
                 "..^~.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, 1, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, 1, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 "..*..",
@@ -358,7 +369,7 @@ class BrickActionTest {
                 "..^..",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, -1, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, -1, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 "..*..",
@@ -374,7 +385,7 @@ class BrickActionTest {
                 "^^*~.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveHorizontally(frame, 1, horizontal, 0, 0);
+        ActiveBrick state = BrickAction.moveHorizontally(frame, 1, activeBrick(horizontal, 0, 0));
 
         assertEquals(show(
                 "^^*~.",
@@ -391,7 +402,7 @@ class BrickActionTest {
                 ".....",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 ".....",
@@ -400,6 +411,7 @@ class BrickActionTest {
         assertEquals(1, state.getHorizontalPosition());
         assertEquals(1, state.getVerticalPosition());
         assertFalse(state.isLanded());
+        assertSame(horizontal, state.getBrick());
     }
 
     @Test
@@ -411,7 +423,7 @@ class BrickActionTest {
                 ".....",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 ".....",
@@ -432,7 +444,7 @@ class BrickActionTest {
                 ".^^*.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 ".....",
@@ -449,7 +461,7 @@ class BrickActionTest {
                 "..^..",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 ".....",
@@ -467,7 +479,7 @@ class BrickActionTest {
                 ".....",
                 "...~.");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 ".....",
@@ -485,7 +497,7 @@ class BrickActionTest {
                 "..^..",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 "...~.",
@@ -502,7 +514,7 @@ class BrickActionTest {
                 ".^^*.",
                 "~...~");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 ".....",
@@ -520,7 +532,7 @@ class BrickActionTest {
                 "..@..",
                 "..^..");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 "..*..",
@@ -529,6 +541,7 @@ class BrickActionTest {
         assertEquals(2, state.getHorizontalPosition());
         assertEquals(0, state.getVerticalPosition());
         assertTrue(state.isLanded());
+        assertSame(vertical, state.getBrick());
     }
 
     @Test
@@ -537,7 +550,7 @@ class BrickActionTest {
                 ".....",
                 ".^^*.");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, horizontal, 1, 1);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(horizontal, 1, 1));
 
         assertEquals(show(
                 ".....",
@@ -554,7 +567,7 @@ class BrickActionTest {
                 ".~...",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 ".^^*.",
@@ -572,7 +585,7 @@ class BrickActionTest {
                 "...~.",
                 ".....");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, horizontal, 1, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(horizontal, 1, 0));
 
         assertEquals(show(
                 ".^^*.",
@@ -591,7 +604,7 @@ class BrickActionTest {
                 "..^..",
                 "..~..");
 
-        ActiveBrickState state = BrickAction.moveDownByOneRow(frame, vertical, 2, 0);
+        ActiveBrick state = BrickAction.moveDownByOneRow(frame, activeBrick(vertical, 2, 0));
 
         assertEquals(show(
                 "..*..",

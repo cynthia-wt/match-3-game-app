@@ -31,7 +31,8 @@ public class GameEngine {
         this.currentGameState = GameState.builder()
                 .frameNumber(1)
                 .brickIndex(-1)
-                .activeBrick(ActiveBrickState.builder()
+                .activeBrick(ActiveBrick.builder()
+                        .brick(null)
                         .horizontalPosition(-1)
                         .verticalPosition(-1)
                         .landed(false)
@@ -43,7 +44,10 @@ public class GameEngine {
         executeCommands(commands);
         dropByOneRow();
 
-        // check if landed and if yes, check for matches - tomorrow
+        if (currentGameState.getActiveBrick().isLanded()) {
+            // check for matches
+        }
+
         // check if all the bricks are used up or all the available spaces are filled up - tomorrow/friday morning
         // add new brick - check if possible - saturday
         // testing and enhancement - sunday
@@ -76,7 +80,8 @@ public class GameEngine {
             }
         }
 
-        ActiveBrickState activeBrickState = ActiveBrickState.builder()
+        ActiveBrick activeBrick = ActiveBrick.builder()
+                .brick(nextBrick)
                 .horizontalPosition(currentHorizontalPosition)
                 .verticalPosition(currentVerticalPosition)
                 .landed(false)
@@ -84,28 +89,21 @@ public class GameEngine {
 
         this.currentGameState = currentGameState.toBuilder()
                 .brickIndex(currentBrickIndex)
-                .activeBrick(activeBrickState)
+                .activeBrick(activeBrick)
                 .build();
     }
 
     private void executeCommands(List<Command> commands) {
         for (Command command : commands) {
-            ActiveBrickState active = currentGameState.getActiveBrick();
-            if (active.isLanded()) {
+            ActiveBrick activeBrick = currentGameState.getActiveBrick();
+            if (activeBrick.isLanded()) {
                 break;
             }
 
-            Brick currentBrick = bricks.get(currentGameState.getBrickIndex());
-            int currentHorizontalPosition = currentGameState.getActiveBrick().getHorizontalPosition();
-            int currentVerticalPosition = currentGameState.getActiveBrick().getVerticalPosition();
-
             switch (command) {
-                case LEFT ->
-                        updateActiveBrickState(moveHorizontally(currentFrame, -1, currentBrick, currentHorizontalPosition, currentVerticalPosition));
-                case RIGHT ->
-                        updateActiveBrickState(moveHorizontally(currentFrame, 1, currentBrick, currentHorizontalPosition, currentVerticalPosition));
-                case DOWN ->
-                        updateActiveBrickState(moveToBottom(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition));
+                case LEFT -> updateActiveBrickState(moveHorizontally(currentFrame, -1, activeBrick));
+                case RIGHT -> updateActiveBrickState(moveHorizontally(currentFrame, 1, activeBrick));
+                case DOWN -> updateActiveBrickState(moveToBottom(currentFrame, activeBrick));
             }
             ;
         }
@@ -113,16 +111,14 @@ public class GameEngine {
 
     private void dropByOneRow() {
         if (!currentGameState.getActiveBrick().isLanded()) {
-            Brick currentBrick = bricks.get(currentGameState.getBrickIndex());
-            int currentHorizontalPosition = currentGameState.getActiveBrick().getHorizontalPosition();
-            int currentVerticalPosition = currentGameState.getActiveBrick().getVerticalPosition();
-            updateActiveBrickState(moveDownByOneRow(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition));
+
+            updateActiveBrickState(moveDownByOneRow(currentFrame, currentGameState.getActiveBrick()));
         }
     }
 
-    private void updateActiveBrickState(ActiveBrickState activeBrickState) {
+    private void updateActiveBrickState(ActiveBrick activeBrick) {
         this.currentGameState = currentGameState.toBuilder()
-                .activeBrick(activeBrickState)
+                .activeBrick(activeBrick)
                 .build();
     }
 

@@ -8,5 +8,5 @@ import lombok.Getter;
 public class GameState {
     int frameNumber;
     int brickIndex;
-    ActiveBrickState activeBrick;
+    ActiveBrick activeBrick;
 }

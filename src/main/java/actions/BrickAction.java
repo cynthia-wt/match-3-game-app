@@ -1,6 +1,6 @@
 package actions;
 
-import model.ActiveBrickState;
+import model.ActiveBrick;
 import model.Alignment;
 import model.Brick;
 
@@ -10,13 +10,15 @@ import static engine.GameEngine.BLANK_CELL;
 
 public class BrickAction {
 
-    public static ActiveBrickState moveToBottom(char[][] currentFrame,
-                                                Brick currentBrick,
-                                                int currentHorizontalPosition,
-                                                int currentVerticalPosition) {
+    public static ActiveBrick moveToBottom(char[][] currentFrame, ActiveBrick activeBrick) {
 
+        Brick currentBrick = activeBrick.getBrick();
+
+        int currentHorizontalPosition = activeBrick.getHorizontalPosition();
+        int currentVerticalPosition = activeBrick.getVerticalPosition();
         Alignment currentBrickAlignment = currentBrick.getAlignment();
         char[] currentBrickSymbols = currentBrick.getSymbols();
+
         clearExistingPosition(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition);
 
         int lowestPossibleRow = getLowestPossibleRow(currentFrame, currentBrickAlignment, currentHorizontalPosition, currentVerticalPosition);
@@ -35,30 +37,27 @@ public class BrickAction {
                 ? lowestPossibleRow
                 : lowestPossibleRow - 2;
 
-        return ActiveBrickState.builder()
-                .horizontalPosition(currentHorizontalPosition)
+        return activeBrick
+                .toBuilder()
                 .verticalPosition(finalVerticalPosition)
                 .landed(true)
                 .build();
     }
 
-    public static ActiveBrickState moveHorizontally(char[][] currentFrame,
-                                                    int horizontalMovement,
-                                                    Brick currentBrick,
-                                                    int currentHorizontalPosition,
-                                                    int currentVerticalPosition) {
+    public static ActiveBrick moveHorizontally(char[][] currentFrame, int horizontalMovement, ActiveBrick activeBrick) {
 
-        int finalHorizontalPosition = currentHorizontalPosition + horizontalMovement;
+        Brick currentBrick = activeBrick.getBrick();
+
+        int currentHorizontalPosition = activeBrick.getHorizontalPosition();
+        int currentVerticalPosition = activeBrick.getVerticalPosition();
         Alignment currentBrickAlignment = currentBrick.getAlignment();
         char[] currentBrickSymbols = currentBrick.getSymbols();
 
+        int finalHorizontalPosition = currentHorizontalPosition + horizontalMovement;
+
         if (checkForHorizontalWalls(currentFrame[0].length, currentBrickAlignment, finalHorizontalPosition) ||
                 checkForHorizontalCollisions(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition, finalHorizontalPosition)) {
-            return ActiveBrickState.builder()
-                    .horizontalPosition(currentHorizontalPosition)
-                    .verticalPosition(currentVerticalPosition)
-                    .landed(false)
-                    .build();
+            return activeBrick;
         }
 
         clearExistingPosition(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition);
@@ -72,22 +71,19 @@ public class BrickAction {
                 currentFrame[currentVerticalPosition + i][finalHorizontalPosition] = currentBrickSymbols[i];
             }
         }
-        return ActiveBrickState.builder()
+        return activeBrick.toBuilder()
                 .horizontalPosition(finalHorizontalPosition)
-                .verticalPosition(currentVerticalPosition)
-                .landed(false)
                 .build();
     }
 
-    public static ActiveBrickState moveDownByOneRow(char[][] currentFrame,
-                                                    Brick currentBrick,
-                                                    int currentHorizontalPosition,
-                                                    int currentVerticalPosition) {
+    public static ActiveBrick moveDownByOneRow(char[][] currentFrame, ActiveBrick activeBrick) {
+
+        Brick currentBrick = activeBrick.getBrick();
+        int currentHorizontalPosition = activeBrick.getHorizontalPosition();
+        int currentVerticalPosition = activeBrick.getVerticalPosition();
 
         if (hasLanded(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition)) {
-            return ActiveBrickState.builder()
-                    .horizontalPosition(currentHorizontalPosition)
-                    .verticalPosition(currentVerticalPosition)
+            return activeBrick.toBuilder()
                     .landed(true)
                     .build();
         }
@@ -107,8 +103,7 @@ public class BrickAction {
             }
         }
 
-        return ActiveBrickState.builder()
-                .horizontalPosition(currentHorizontalPosition)
+        return activeBrick.toBuilder()
                 .verticalPosition(currentVerticalPosition + 1)
                 .landed(hasLanded(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition + 1))
                 .build();
