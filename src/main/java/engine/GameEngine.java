@@ -8,48 +8,54 @@ import model.*;
 import java.util.Arrays;
 import java.util.List;
 
-import static actions.BrickAction.moveHorizontally;
-import static actions.BrickAction.moveToBottom;
+import static actions.BrickAction.*;
 
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GameEngine {
+    final char[][] currentFrame;
     final List<Brick> bricks;
-    char[][] currentFrame;
+    GameState currentGameState;
 
-    // setting this as 0 since we do not have any frames now
-    int currentFrameNumber = 0;
-
-    // setting these as -1 at the start when there is no bricks
-    int currentBrickIndex = -1;
-    int currentVerticalPosition = -1;
-    int currentHorizontalPosition = -1;
-
-    public static char BLANK_CELL = '.';
+    public static final char BLANK_CELL = '.';
 
     public GameEngine(InitializationInput initializationInput) {
         int width = initializationInput.getBoardWidth();
         int height = initializationInput.getBoardHeight();
         char[][] board = new char[height][width];
         for (char[] row : board) {
-            Arrays.fill(row, '.');
+            Arrays.fill(row, BLANK_CELL);
         }
         this.currentFrame = board;
         this.bricks = initializationInput.getBricks();
+        this.currentGameState = GameState.builder()
+                .frameNumber(1)
+                .brickIndex(-1)
+                .activeBrick(ActiveBrickState.builder()
+                        .horizontalPosition(-1)
+                        .verticalPosition(-1)
+                        .landed(false)
+                        .build())
+                .build();
     }
 
     public void nextTurn(List<Command> commands) {
         executeCommands(commands);
-        // move by down by 1 row => goal today
+        dropByOneRow();
 
-        // check for matches
-        // check if all the bricks are used up or all the available spaces are filled up
-        // add new brick - check if possible
+        // check if landed and if yes, check for matches - tomorrow
+        // check if all the bricks are used up or all the available spaces are filled up - tomorrow/friday morning
+        // add new brick - check if possible - saturday
+        // testing and enhancement - sunday
+        // check once more, before submitting by 5pm - monday
+
+        incrementFrameNumber();
     }
 
     public void nextBrick() {
-        currentBrickIndex = currentBrickIndex + 1;
-        currentVerticalPosition = 0;
+        int currentBrickIndex = currentGameState.getBrickIndex() + 1;
+        int currentVerticalPosition = 0;
+        int currentHorizontalPosition;
 
         Brick nextBrick = bricks.get(currentBrickIndex);
         Alignment alignment = nextBrick.getAlignment();
@@ -69,28 +75,62 @@ public class GameEngine {
                 currentFrame[i][col] = symbols[i];
             }
         }
+
+        ActiveBrickState activeBrickState = ActiveBrickState.builder()
+                .horizontalPosition(currentHorizontalPosition)
+                .verticalPosition(currentVerticalPosition)
+                .landed(false)
+                .build();
+
+        this.currentGameState = currentGameState.toBuilder()
+                .brickIndex(currentBrickIndex)
+                .activeBrick(activeBrickState)
+                .build();
     }
 
     private void executeCommands(List<Command> commands) {
-        Brick currentBrick = bricks.get(currentBrickIndex);
-
         for (Command command : commands) {
+            ActiveBrickState active = currentGameState.getActiveBrick();
+            if (active.isLanded()) {
+                break;
+            }
+
+            Brick currentBrick = bricks.get(currentGameState.getBrickIndex());
+            int currentHorizontalPosition = currentGameState.getActiveBrick().getHorizontalPosition();
+            int currentVerticalPosition = currentGameState.getActiveBrick().getVerticalPosition();
+
             switch (command) {
                 case LEFT ->
-                        updateGameState(moveHorizontally(currentFrame, -1, currentBrick, currentHorizontalPosition, currentVerticalPosition));
+                        updateActiveBrickState(moveHorizontally(currentFrame, -1, currentBrick, currentHorizontalPosition, currentVerticalPosition));
                 case RIGHT ->
-                        updateGameState(moveHorizontally(currentFrame, 1, currentBrick, currentHorizontalPosition, currentVerticalPosition));
+                        updateActiveBrickState(moveHorizontally(currentFrame, 1, currentBrick, currentHorizontalPosition, currentVerticalPosition));
                 case DOWN ->
-                        updateGameState(moveToBottom(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition));
+                        updateActiveBrickState(moveToBottom(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition));
             }
             ;
         }
     }
 
-    private void updateGameState(GameState gameState) {
-        this.currentFrame = gameState.getCurrentFrame();
-        this.currentHorizontalPosition = gameState.getCurrentHorizontalPosition();
-        this.currentVerticalPosition = gameState.getCurrentVerticalPosition();
+    private void dropByOneRow() {
+        if (!currentGameState.getActiveBrick().isLanded()) {
+            Brick currentBrick = bricks.get(currentGameState.getBrickIndex());
+            int currentHorizontalPosition = currentGameState.getActiveBrick().getHorizontalPosition();
+            int currentVerticalPosition = currentGameState.getActiveBrick().getVerticalPosition();
+            updateActiveBrickState(moveDownByOneRow(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition));
+        }
+    }
+
+    private void updateActiveBrickState(ActiveBrickState activeBrickState) {
+        this.currentGameState = currentGameState.toBuilder()
+                .activeBrick(activeBrickState)
+                .build();
+    }
+
+    private void incrementFrameNumber() {
+        int currentFrameNumber = currentGameState.getFrameNumber();
+        this.currentGameState = currentGameState.toBuilder()
+                .frameNumber(currentFrameNumber + 1)
+                .build();
     }
 
 }

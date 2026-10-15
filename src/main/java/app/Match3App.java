@@ -22,7 +22,7 @@ public class Match3App {
         gameEngine.nextBrick();
 
         while (continueGame) {
-            List<Command> commands = gameConsole.nextTurn(gameEngine.getCurrentFrame(), gameEngine.getCurrentFrameNumber());
+            List<Command> commands = gameConsole.nextTurn(gameEngine.getCurrentFrame(), gameEngine.getCurrentGameState().getFrameNumber());
             gameEngine.nextTurn(commands);
         }
     }

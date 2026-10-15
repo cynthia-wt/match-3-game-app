@@ -4,9 +4,9 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 public class GameState {
-    char[][] currentFrame;
-    int currentHorizontalPosition;
-    int currentVerticalPosition;
+    int frameNumber;
+    int brickIndex;
+    ActiveBrickState activeBrick;
 }
