@@ -1,12 +1,14 @@
 package actions;
 
+import engine.GameConfig;
 import model.ActiveBrick;
 import model.Alignment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static engine.GameEngine.BLANK_CELL;
+import static engine.GameConfig.BLANK_CELL;
+import static engine.GameConfig.BRICK_LENGTH;
 
 public class MatchAction {
 
@@ -19,13 +21,13 @@ public class MatchAction {
 
         if (alignment.equals(Alignment.HORIZONTAL)) {
             // For a horizontal brick, the row is fixed, columns span 3 cells
-            for (int col = currentHorizontalPosition; col < currentHorizontalPosition + 3; col++) {
+            for (int col = currentHorizontalPosition; col < currentHorizontalPosition + BRICK_LENGTH; col++) {
                 horizontalMatches.addAll(checkForHorizontalMatches(currentFrame, col, currentVerticalPosition));
                 verticalMatches.addAll(checkForVerticalMatches(currentFrame, currentVerticalPosition, col));
             }
         } else {
             // For a vertical brick, the column is fixed, rows span 3 cells
-            for (int row = currentVerticalPosition; row < currentVerticalPosition + 3; row++) {
+            for (int row = currentVerticalPosition; row < currentVerticalPosition + BRICK_LENGTH; row++) {
                 horizontalMatches.addAll(checkForHorizontalMatches(currentFrame, currentHorizontalPosition, row));
                 verticalMatches.addAll(checkForVerticalMatches(currentFrame, row, currentHorizontalPosition));
             }
@@ -55,11 +57,7 @@ public class MatchAction {
             right++;
         }
 
-        if (matches.size() >= 3) {
-            return matches;
-        } else {
-            return List.of();
-        }
+        return matches.size() >= GameConfig.MIN_MATCH_NUMBER ? matches : List.of();
     }
 
     private static List<int[]> checkForVerticalMatches(char[][] currentFrame, int row, int col) {
@@ -82,11 +80,7 @@ public class MatchAction {
             bottom++;
         }
 
-        if (matches.size() >= 3) {
-            return matches;
-        } else {
-            return List.of();
-        }
+        return matches.size() >= GameConfig.MIN_MATCH_NUMBER ? matches : List.of();
     }
 
     private static void clearHorizontalMatches(char[][] currentFrame, List<int[]> matches) {

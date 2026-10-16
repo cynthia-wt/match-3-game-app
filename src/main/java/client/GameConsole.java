@@ -22,6 +22,10 @@ public class GameConsole {
         return ParseInputAction.parseInitializationInput(input);
     }
 
+    public void invalidInput() {
+        System.out.println("> You have entered an invalid input.");
+    }
+
     public List<Command> nextTurn(char[][] currentFrame, int frameNumber) {
         printFrame(currentFrame, frameNumber);
 

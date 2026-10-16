@@ -1,19 +1,12 @@
-package engine;
+package actions;
 
-import model.ActiveBrick;
-import model.Alignment;
-import model.Brick;
-import model.Command;
-import model.InitializationInput;
+import engine.GameEngine;
+import model.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GameEngineTest {
 
@@ -427,5 +420,15 @@ class GameEngineTest {
         nextTurns(engine, 2);
 
         assertEquals(3, engine.getCurrentGameState().getFrameNumber());
+    }
+
+    @Test
+    void hasGameEnded_verticalSpawnBlockedBelowTopRow_isTrue() {
+        // 2nd cell of the spawn column is occupied, but row 0 is blank
+        GameEngine engine = engine(5, 5, brick(Alignment.HORIZONTAL, "abc"), vertical);
+        engine.nextBrick();
+        nextTurns(engine, 1);   // "abc" now on row 1, columns 1-3 -> blocks (1,2)
+
+        assertTrue(engine.hasGameEnded());
     }
 }

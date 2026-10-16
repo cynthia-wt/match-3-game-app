@@ -6,7 +6,8 @@ import model.Brick;
 
 import java.util.Arrays;
 
-import static engine.GameEngine.BLANK_CELL;
+import static engine.GameConfig.BLANK_CELL;
+import static engine.GameConfig.BRICK_LENGTH;
 
 public class BrickAction {
 
@@ -23,19 +24,19 @@ public class BrickAction {
 
         int lowestPossibleRow = getLowestPossibleRow(currentFrame, currentBrickAlignment, currentHorizontalPosition, currentVerticalPosition);
         if (currentBrickAlignment.equals(Alignment.HORIZONTAL)) {
-            for (int i = 0; i < currentBrickSymbols.length; i++) {
+            for (int i = 0; i < BRICK_LENGTH; i++) {
                 currentFrame[lowestPossibleRow][currentHorizontalPosition + i] = currentBrickSymbols[i];
             }
         } else {
-            int topRow = lowestPossibleRow - 2;
-            for (int i = 0; i < currentBrickSymbols.length; i++) {
+            int topRow = lowestPossibleRow - BRICK_LENGTH + 1;
+            for (int i = 0; i < BRICK_LENGTH; i++) {
                 currentFrame[topRow + i][currentHorizontalPosition] = currentBrickSymbols[i];
             }
         }
 
         int finalVerticalPosition = currentBrickAlignment.equals(Alignment.HORIZONTAL)
                 ? lowestPossibleRow
-                : lowestPossibleRow - 2;
+                : lowestPossibleRow - BRICK_LENGTH + 1;
 
         return activeBrick
                 .toBuilder()
@@ -63,11 +64,11 @@ public class BrickAction {
         clearExistingPosition(currentFrame, currentBrick, currentHorizontalPosition, currentVerticalPosition);
 
         if (currentBrickAlignment.equals(Alignment.HORIZONTAL)) {
-            for (int i = 0; i < currentBrickSymbols.length; i++) {
+            for (int i = 0; i < BRICK_LENGTH; i++) {
                 currentFrame[currentVerticalPosition][finalHorizontalPosition + i] = currentBrickSymbols[i];
             }
         } else {
-            for (int i = 0; i < currentBrickSymbols.length; i++) {
+            for (int i = 0; i < BRICK_LENGTH; i++) {
                 currentFrame[currentVerticalPosition + i][finalHorizontalPosition] = currentBrickSymbols[i];
             }
         }
@@ -94,11 +95,11 @@ public class BrickAction {
         char[] currentBrickSymbols = currentBrick.getSymbols();
 
         if (currentBrickAlignment.equals(Alignment.HORIZONTAL)) {
-            for (int i = 0; i < currentBrickSymbols.length; i++) {
+            for (int i = 0; i < BRICK_LENGTH; i++) {
                 currentFrame[currentVerticalPosition + 1][currentHorizontalPosition + i] = currentBrickSymbols[i];
             }
         } else {
-            for (int i = 0; i < currentBrickSymbols.length; i++) {
+            for (int i = 0; i < BRICK_LENGTH; i++) {
                 currentFrame[currentVerticalPosition + 1 + i][currentHorizontalPosition] = currentBrickSymbols[i];
             }
         }
@@ -121,14 +122,14 @@ public class BrickAction {
 
         if (currentBrickAlignment.equals(Alignment.HORIZONTAL)) {
             for (int v = currentVerticalPosition + 1; v < currentFrame.length; v++) {
-                for (int h = currentHorizontalPosition; h <= currentHorizontalPosition + 2; h++) {
+                for (int h = currentHorizontalPosition; h <= currentHorizontalPosition + BRICK_LENGTH - 1; h++) {
                     if (currentFrame[v][h] != BLANK_CELL) {
                         return v - 1;
                     }
                 }
             }
         } else {
-            for (int v = currentVerticalPosition + 3; v < currentFrame.length; v++) {
+            for (int v = currentVerticalPosition + BRICK_LENGTH; v < currentFrame.length; v++) {
                 if (currentFrame[v][currentHorizontalPosition] != BLANK_CELL) {
                     return v - 1;
                 }
@@ -140,7 +141,7 @@ public class BrickAction {
 
     private static boolean checkForHorizontalWalls(int boardWidth, Alignment currentBrickAlignment, int finalHorizontalPosition) {
         if (currentBrickAlignment.equals(Alignment.HORIZONTAL)) {
-            return finalHorizontalPosition < 0 || finalHorizontalPosition + 2 > boardWidth - 1;
+            return finalHorizontalPosition < 0 || finalHorizontalPosition + BRICK_LENGTH - 1 > boardWidth - 1;
         } else {
             return finalHorizontalPosition < 0 || finalHorizontalPosition > boardWidth - 1;
         }
@@ -150,7 +151,7 @@ public class BrickAction {
         if (currentBrickAlignment.equals(Alignment.HORIZONTAL)) {
             return finalVerticalPosition > boardHeight - 1;
         } else {
-            return finalVerticalPosition + 2 > boardHeight - 1;
+            return finalVerticalPosition + BRICK_LENGTH - 1 > boardHeight - 1;
         }
     }
 
@@ -161,13 +162,13 @@ public class BrickAction {
         clearExistingPosition(tempFrameForCollisionCheck, currentBrick, currentHorizontalPosition, currentVerticalPosition);
 
         if (currentBrick.getAlignment().equals(Alignment.HORIZONTAL)) {
-            for (int i = finalHorizontalPosition; i < finalHorizontalPosition + 3; i++) {
+            for (int i = finalHorizontalPosition; i < finalHorizontalPosition + BRICK_LENGTH; i++) {
                 if (tempFrameForCollisionCheck[currentVerticalPosition][i] != BLANK_CELL) {
                     return true;
                 }
             }
         } else {
-            for (int i = currentVerticalPosition; i < currentVerticalPosition + 3; i++) {
+            for (int i = currentVerticalPosition; i < currentVerticalPosition + BRICK_LENGTH; i++) {
                 if (tempFrameForCollisionCheck[i][finalHorizontalPosition] != BLANK_CELL) {
                     return true;
                 }
@@ -183,13 +184,13 @@ public class BrickAction {
         clearExistingPosition(tempFrameForCollisionCheck, currentBrick, currentHorizontalPosition, currentVerticalPosition);
 
         if (currentBrick.getAlignment().equals(Alignment.HORIZONTAL)) {
-            for (int i = currentHorizontalPosition; i < currentHorizontalPosition + 3; i++) {
+            for (int i = currentHorizontalPosition; i < currentHorizontalPosition + BRICK_LENGTH; i++) {
                 if (tempFrameForCollisionCheck[finalVerticalPosition][i] != BLANK_CELL) {
                     return true;
                 }
             }
         } else {
-            for (int i = finalVerticalPosition; i < finalVerticalPosition + 3; i++) {
+            for (int i = finalVerticalPosition; i < finalVerticalPosition + BRICK_LENGTH; i++) {
                 if (tempFrameForCollisionCheck[i][currentHorizontalPosition] != BLANK_CELL) {
                     return true;
                 }

@@ -14,16 +14,24 @@ public class Match3App {
         GameConsole gameConsole = new GameConsole();
 
         while (playAgain) {
-            startGameLoop();
+            startGameLoop(gameConsole);
             playAgain = gameConsole.startOver().equalsIgnoreCase("S");
         }
 
         gameConsole.quit();
     }
 
-    private static void startGameLoop() {
-        GameConsole gameConsole = new GameConsole();
-        InitializationInput initializationInput = gameConsole.initialiseGame();
+    private static void startGameLoop(GameConsole gameConsole) {
+        InitializationInput initializationInput;
+        while (true) {
+            try {
+                initializationInput = gameConsole.initialiseGame();
+                break;
+            } catch (IllegalArgumentException e) {
+                gameConsole.invalidInput();
+            }
+        }
+
         GameEngine gameEngine = new GameEngine(initializationInput);
 
         while (true) {

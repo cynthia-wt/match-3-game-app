@@ -18,14 +18,12 @@ public class GameEngine {
     final List<Brick> bricks;
     GameState currentGameState;
 
-    public static final char BLANK_CELL = '.';
-
     public GameEngine(InitializationInput initializationInput) {
         int width = initializationInput.getBoardWidth();
         int height = initializationInput.getBoardHeight();
         char[][] board = new char[height][width];
         for (char[] row : board) {
-            Arrays.fill(row, BLANK_CELL);
+            Arrays.fill(row, GameConfig.BLANK_CELL);
         }
         this.currentFrame = board;
         this.bricks = initializationInput.getBricks();
@@ -62,11 +60,11 @@ public class GameEngine {
         char[] symbols = nextBrick.getSymbols();
 
         if (alignment.equals(Alignment.HORIZONTAL)) {
-            for (int i = 0; i < symbols.length; i++) {
+            for (int i = 0; i < GameConfig.BRICK_LENGTH; i++) {
                 currentFrame[0][currentHorizontalPosition + i] = symbols[i];
             }
         } else {
-            for (int i = 0; i < symbols.length; i++) {
+            for (int i = 0; i < GameConfig.BRICK_LENGTH; i++) {
                 currentFrame[i][currentHorizontalPosition] = symbols[i];
             }
         }
@@ -92,14 +90,16 @@ public class GameEngine {
         Brick nextBrick = bricks.get(currentGameState.getBrickIndex() + 1);
         int nextBrickHorizontalPosition = getBrickFirstHorizontalPosition(nextBrick);
         if (nextBrick.getAlignment().equals(Alignment.HORIZONTAL)) {
-            for (int i = 0; i < nextBrick.getSymbols().length; i++) {
-                if (currentFrame[0][nextBrickHorizontalPosition + i] != BLANK_CELL) {
+            for (int i = 0; i < GameConfig.BRICK_LENGTH; i++) {
+                if (currentFrame[0][nextBrickHorizontalPosition + i] != GameConfig.BLANK_CELL) {
                     return true;
                 }
             }
         } else {
-            if (currentFrame[0][nextBrickHorizontalPosition] != BLANK_CELL) {
-                return true;
+            for (int i = 0; i < GameConfig.BRICK_LENGTH; i++) {
+                if (currentFrame[i][nextBrickHorizontalPosition] != GameConfig.BLANK_CELL) {
+                    return true;
+                }
             }
         }
 
@@ -146,7 +146,7 @@ public class GameEngine {
         Alignment alignment = brick.getAlignment();
         int boardWidth = currentFrame[0].length;
         if (alignment.equals(Alignment.HORIZONTAL)) {
-            return (boardWidth - 3) / 2;
+            return (boardWidth - GameConfig.BRICK_LENGTH) / 2;
         } else {
             return (boardWidth - 1) / 2;
         }
