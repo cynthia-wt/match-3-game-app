@@ -5,202 +5,260 @@ import model.Alignment;
 import model.Brick;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MatchActionTest {
 
-    private static final char BLANK = '.';
+    // ---------- helpers ----------
+
+    private static Brick brick(Alignment alignment, String symbols) {
+        return Brick.builder().alignment(alignment).symbols(symbols.toCharArray()).build();
+    }
+
+    private static ActiveBrick landed(Brick brick, int x, int y) {
+        return ActiveBrick.builder()
+                .brick(brick)
+                .horizontalPosition(x)
+                .verticalPosition(y)
+                .landed(true)
+                .build();
+    }
+
+    private static char[][] frame(String... rows) {
+        char[][] frame = new char[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            frame[i] = rows[i].toCharArray();
+        }
+        return frame;
+    }
+
+    private static String show(char[][] frame) {
+        StringBuilder sb = new StringBuilder();
+        for (char[] row : frame) {
+            sb.append(new String(row)).append('\n');
+        }
+        return sb.toString();
+    }
+
+    private static String show(String... rows) {
+        return show(frame(rows));
+    }
+
+    private final Brick horizontalAaa = brick(Alignment.HORIZONTAL, "aaa");
+    private final Brick verticalAaa = brick(Alignment.VERTICAL, "aaa");
+
+    // ---------- horizontal brick ----------
 
     @Test
-    void testHorizontalMatchFound() {
-        char[][] frame = {
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, 'A', 'A', 'A', BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK}
-        };
+    void horizontalBrick_threeSameSymbols_clearsTheRow() {
+        char[][] frame = frame(
+                ".....",
+                ".aaa.");
 
-        Brick brick = Brick.builder()
-                .alignment(Alignment.HORIZONTAL)
-                .build();
+        MatchAction.checkForMatches(frame, landed(horizontalAaa, 1, 1));
 
-        ActiveBrick activeBrick = ActiveBrick.builder()
-                .brick(brick)
-                .horizontalPosition(1)
-                .verticalPosition(2)
-                .build();
-
-        MatchAction.checkForMatches(frame, activeBrick);
-
-        assertEquals(BLANK, frame[2][1]);
-        assertEquals(BLANK, frame[2][2]);
-        assertEquals(BLANK, frame[2][3]);
+        assertEquals(show(
+                ".....",
+                "....."), show(frame));
     }
 
     @Test
-    void testVerticalMatchFound() {
-        char[][] frame = {
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, 'B', BLANK, BLANK},
-                {BLANK, BLANK, 'B', BLANK, BLANK},
-                {BLANK, BLANK, 'B', BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK}
-        };
+    void horizontalBrick_matchAgainstLeftWall_isCleared() {
+        char[][] frame = frame(
+                "aaa..",
+                ".....");
 
-        Brick brick = Brick.builder()
-                .alignment(Alignment.VERTICAL)
-                .build();
+        MatchAction.checkForMatches(frame, landed(horizontalAaa, 0, 0));
 
-        ActiveBrick activeBrick = ActiveBrick.builder()
-                .brick(brick)
-                .horizontalPosition(2)
-                .verticalPosition(1)
-                .build();
-
-        MatchAction.checkForMatches(frame, activeBrick);
-
-        assertEquals(BLANK, frame[1][2]);
-        assertEquals(BLANK, frame[2][2]);
-        assertEquals(BLANK, frame[3][2]);
+        assertEquals(show(
+                ".....",
+                "....."), show(frame));
     }
 
     @Test
-    void testNoMatchWhenLessThanThree() {
-        char[][] frame = {
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, 'C', 'C', BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK}
-        };
+    void horizontalBrick_matchAgainstRightWall_isCleared() {
+        char[][] frame = frame(
+                "..aaa",
+                ".....");
 
-        Brick brick = Brick.builder()
-                .alignment(Alignment.HORIZONTAL)
-                .build();
+        MatchAction.checkForMatches(frame, landed(horizontalAaa, 2, 0));
 
-        ActiveBrick activeBrick = ActiveBrick.builder()
-                .brick(brick)
-                .horizontalPosition(1)
-                .verticalPosition(1)
-                .build();
-
-        MatchAction.checkForMatches(frame, activeBrick);
-
-        assertEquals('C', frame[1][1]);
-        assertEquals('C', frame[1][2]);
+        assertEquals(show(
+                ".....",
+                "....."), show(frame));
     }
 
     @Test
-    void testBlankCellsAreIgnored() {
-        char[][] frame = {
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK}
-        };
+    void horizontalBrick_matchExtendsIntoCellsOnItsLeft_clearsThemAll() {
+        // brick "a*^" at x=2, with two 'a' already to its left
+        char[][] frame = frame(
+                "aaa*^",
+                ".....");
 
-        Brick brick = Brick.builder()
-                .alignment(Alignment.HORIZONTAL)
-                .build();
+        MatchAction.checkForMatches(frame, landed(brick(Alignment.HORIZONTAL, "a*^"), 2, 0));
 
-        ActiveBrick activeBrick = ActiveBrick.builder()
-                .brick(brick)
-                .horizontalPosition(1)
-                .verticalPosition(2)
-                .build();
-
-        assertDoesNotThrow(() -> MatchAction.checkForMatches(frame, activeBrick));
-
-        assertEquals(BLANK, frame[2][1]);
-        assertEquals(BLANK, frame[2][2]);
-        assertEquals(BLANK, frame[2][3]);
-    }
-
-    // ==========================================
-    // EDGE CASES & FALSE POSITIVE TESTS
-    // ==========================================
-
-    @Test
-    void testFalsePositiveDiscontiguousSymbols() {
-        char[][] frame = {
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, 'A', 'X', 'A', BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK}
-        };
-
-        Brick brick = Brick.builder()
-                .alignment(Alignment.HORIZONTAL)
-                .build();
-
-        ActiveBrick activeBrick = ActiveBrick.builder()
-                .brick(brick)
-                .horizontalPosition(1)
-                .verticalPosition(1)
-                .build();
-
-        MatchAction.checkForMatches(frame, activeBrick);
-
-        assertEquals('A', frame[1][1]);
-        assertEquals('X', frame[1][2]);
-        assertEquals('A', frame[1][3]);
+        assertEquals(show(
+                "...*^",
+                "....."), show(frame));
     }
 
     @Test
-    void testBoundaryEdgeCaseLeftmostColumn() {
-        char[][] frame = {
-                {'D', 'D', 'D', BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK}
-        };
+    void horizontalBrick_matchExtendsOnBothSides_clearsAllFive() {
+        char[][] frame = frame(
+                "aaaaa",
+                ".....");
 
-        Brick brick = Brick.builder()
-                .alignment(Alignment.HORIZONTAL)
-                .build();
+        MatchAction.checkForMatches(frame, landed(horizontalAaa, 1, 0));
 
-        ActiveBrick activeBrick = ActiveBrick.builder()
-                .brick(brick)
-                .horizontalPosition(0)
-                .verticalPosition(0)
-                .build();
-
-        MatchAction.checkForMatches(frame, activeBrick);
-
-        assertEquals(BLANK, frame[0][0]);
-        assertEquals(BLANK, frame[0][1]);
-        assertEquals(BLANK, frame[0][2]);
+        assertEquals(show(
+                ".....",
+                "....."), show(frame));
     }
 
     @Test
-    void testBoundaryEdgeCaseTopRow() {
-        char[][] frame = {
-                {'E', BLANK, BLANK, BLANK, BLANK},
-                {'E', BLANK, BLANK, BLANK, BLANK},
-                {'E', BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK},
-                {BLANK, BLANK, BLANK, BLANK, BLANK}
-        };
+    void horizontalBrick_onlyTwoInARow_isNotCleared() {
+        // brick "a*^" at x=1, with one 'a' next to it: only two in a row
+        char[][] frame = frame(
+                "aa*^.",
+                ".....");
 
-        Brick brick = Brick.builder()
-                .alignment(Alignment.VERTICAL)
-                .build();
+        MatchAction.checkForMatches(frame, landed(brick(Alignment.HORIZONTAL, "a*^"), 1, 0));
 
-        ActiveBrick activeBrick = ActiveBrick.builder()
-                .brick(brick)
-                .horizontalPosition(0)
-                .verticalPosition(0)
-                .build();
+        assertEquals(show(
+                "aa*^.",
+                "....."), show(frame));
+    }
 
-        MatchAction.checkForMatches(frame, activeBrick);
+    @Test
+    void horizontalBrick_noMatch_leavesFrameUnchanged() {
+        char[][] frame = frame(
+                ".^^*.",
+                ".....");
 
-        assertEquals(BLANK, frame[0][0]);
-        assertEquals(BLANK, frame[1][0]);
-        assertEquals(BLANK, frame[2][0]);
+        MatchAction.checkForMatches(frame, landed(brick(Alignment.HORIZONTAL, "^^*"), 1, 0));
+
+        assertEquals(show(
+                ".^^*.",
+                "....."), show(frame));
+    }
+
+    @Test
+    void horizontalBrick_middleCellCompletesAVerticalMatch() {
+        // brick "*a^" at x=1, row 2; column 2 has 'a' in rows 0-2
+        char[][] frame = frame(
+                "..a..",
+                "..a..",
+                ".*a^.");
+
+        MatchAction.checkForMatches(frame, landed(brick(Alignment.HORIZONTAL, "*a^"), 1, 2));
+
+        assertEquals(show(
+                ".....",
+                ".....",
+                ".*.^."), show(frame));
+    }
+
+    // ---------- vertical brick ----------
+
+    @Test
+    void verticalBrick_threeSameSymbolsAtTheBottom_clearsTheColumn() {
+        char[][] frame = frame(
+                ".....",
+                "..a..",
+                "..a..",
+                "..a..");
+
+        MatchAction.checkForMatches(frame, landed(verticalAaa, 2, 1));
+
+        assertEquals(show(
+                ".....",
+                ".....",
+                ".....",
+                "....."), show(frame));
+    }
+
+    @Test
+    void verticalBrick_matchExtendsAboveTheBrick_clearsAllFour() {
+        char[][] frame = frame(
+                "..a..",
+                "..a..",
+                "..a..",
+                "..a..");
+
+        MatchAction.checkForMatches(frame, landed(verticalAaa, 2, 1));
+
+        assertEquals(show(
+                ".....",
+                ".....",
+                ".....",
+                "....."), show(frame));
+    }
+
+    @Test
+    void verticalBrick_middleCellCompletesAHorizontalMatch() {
+        // brick "*a^" at column 2; row 1 has 'a' at columns 0 and 1
+        char[][] frame = frame(
+                "..*..",
+                "aaa..",
+                "..^..");
+
+        MatchAction.checkForMatches(frame, landed(brick(Alignment.VERTICAL, "*a^"), 2, 0));
+
+        assertEquals(show(
+                "..*..",
+                ".....",
+                "..^.."), show(frame));
+    }
+
+    @Test
+    void verticalBrick_noMatch_leavesFrameUnchanged() {
+        char[][] frame = frame(
+                "..*..",
+                "..@..",
+                "..^..");
+
+        MatchAction.checkForMatches(frame, landed(brick(Alignment.VERTICAL, "*@^"), 2, 0));
+
+        assertEquals(show(
+                "..*..",
+                "..@..",
+                "..^.."), show(frame));
+    }
+
+    // ---------- scope ----------
+
+    @Test
+    void matchesNotTouchingTheLandedBrick_areLeftAlone() {
+        char[][] frame = frame(
+                "bbb..",
+                ".....",
+                ".^^*.");
+
+        MatchAction.checkForMatches(frame, landed(brick(Alignment.HORIZONTAL, "^^*"), 1, 2));
+
+        assertEquals(show(
+                "bbb..",
+                ".....",
+                ".^^*."), show(frame));
+    }
+
+    // ---------- both directions at once ----------
+
+    @Test
+    void verticalBrick_matchingInBothDirections_clearsBothLines() {
+        // column 2 is a vertical line of three, and row 1 is a horizontal line of three
+        char[][] frame = frame(
+                "..a..",
+                "aaa..",
+                "..a..",
+                ".....");
+
+        MatchAction.checkForMatches(frame, landed(verticalAaa, 2, 0));
+
+        assertEquals(show(
+                ".....",
+                ".....",
+                ".....",
+                "....."), show(frame));
     }
 }

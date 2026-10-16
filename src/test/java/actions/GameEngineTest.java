@@ -1,14 +1,20 @@
-package actions;
+package engine;
 
-import engine.GameEngine;
-import model.*;
+import model.ActiveBrick;
+import model.Alignment;
+import model.Brick;
+import model.Command;
+import model.InitializationInput;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// need to add in end-to-end testing for the matching logic
 class GameEngineTest {
 
     // ---------- helpers ----------
@@ -69,6 +75,9 @@ class GameEngineTest {
         assertEquals(1, engine.getCurrentGameState().getFrameNumber());
         assertEquals(-1, engine.getCurrentGameState().getBrickIndex());
         assertNull(active(engine).getBrick());
+        assertEquals(-1, active(engine).getHorizontalPosition());
+        assertEquals(-1, active(engine).getVerticalPosition());
+        assertTrue(active(engine).isLanded()); // placeholder counts as landed, so nothing moves
     }
 
     // ---------- nextBrick ----------
@@ -309,6 +318,102 @@ class GameEngineTest {
                 "..^^*..");
         assertEquals(2, active(engine).getHorizontalPosition());
         assertTrue(active(engine).isLanded());
+    }
+
+    // ---------- matches ----------
+
+    @Test
+    void nextTurn_horizontalMatchOfThree_isClearedWhenBrickLands() {
+        Brick matching = brick(Alignment.HORIZONTAL, "aaa");
+        GameEngine engine = engine(5, 4, matching);
+        engine.nextBrick();
+
+        nextTurns(engine, 2); // still falling: nothing cleared
+        assertFrame(engine,
+                ".....",
+                ".....",
+                ".aaa.",
+                ".....");
+
+        nextTurns(engine, 1); // lands on the floor and matches
+
+        assertFrame(engine,
+                ".....",
+                ".....",
+                ".....",
+                ".....");
+        assertTrue(active(engine).isLanded());
+    }
+
+    @Test
+    void nextTurn_verticalMatchOfThree_isClearedWhenBrickLands() {
+        Brick matching = brick(Alignment.VERTICAL, "aaa");
+        GameEngine engine = engine(5, 4, matching);
+
+        engine.nextBrick();
+        engine.nextTurn(List.of(Command.DOWN));
+
+        assertFrame(engine,
+                ".....",
+                ".....",
+                ".....",
+                ".....");
+    }
+
+    @Test
+    void nextTurn_landedBrickWithoutMatch_staysOnBoard() {
+        GameEngine engine = engine(5, 4, horizontal);
+        engine.nextBrick();
+
+        engine.nextTurn(List.of(Command.DOWN));
+
+        assertFrame(engine,
+                ".....",
+                ".....",
+                ".....",
+                ".^^*.");
+    }
+
+    // ---------- hasGameEnded ----------
+
+    @Test
+    void hasGameEnded_beforeFirstBrick_isFalseWhenBricksAreAvailable() {
+        GameEngine engine = engine(5, 4, horizontal);
+
+        assertFalse(engine.hasGameEnded());
+    }
+
+    @Test
+    void hasGameEnded_whenAllBricksAreUsed_isTrue() {
+        GameEngine engine = engine(5, 4, horizontal);
+        engine.nextBrick();
+
+        assertTrue(engine.hasGameEnded());
+    }
+
+    @Test
+    void hasGameEnded_nextBrickHasRoomToSpawn_isFalse() {
+        GameEngine engine = engine(5, 4, horizontal, brick(Alignment.HORIZONTAL, "abc"));
+        engine.nextBrick();
+        nextTurns(engine, 3); // first brick lands on the floor
+
+        assertFalse(engine.hasGameEnded());
+    }
+
+    @Test
+    void hasGameEnded_horizontalSpawnAreaBlocked_isTrue() {
+        GameEngine engine = engine(5, 4, horizontal, brick(Alignment.HORIZONTAL, "abc"));
+        engine.nextBrick(); // first brick still sits on the top row
+
+        assertTrue(engine.hasGameEnded());
+    }
+
+    @Test
+    void hasGameEnded_verticalSpawnColumnBlocked_isTrue() {
+        GameEngine engine = engine(5, 4, vertical, brick(Alignment.VERTICAL, "xyz"));
+        engine.nextBrick(); // first brick occupies the spawn column from row 0
+
+        assertTrue(engine.hasGameEnded());
     }
 
     // ---------- frame counter ----------
